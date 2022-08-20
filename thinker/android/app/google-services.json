@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1025680549733",
+    "project_id": "thinkerr-9061c",
+    "storage_bucket": "thinkerr-9061c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025680549733:android:388d2ee0707de44b67638c",
+        "android_client_info": {
+          "package_name": "com.example.thinker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1025680549733-a9rul1i526c386ilqmvvspgfcs1t6pua.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQR-4RP4Jx9mWaDjqpmL2lOTtdS-EaYww"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1025680549733-a9rul1i526c386ilqmvvspgfcs1t6pua.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1025680549733-j42pm1ej2je9lnlp6j8bbba7pmu1772f.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.thinker"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
