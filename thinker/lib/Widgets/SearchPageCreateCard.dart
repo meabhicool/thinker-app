@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:thinker/CreatePage.dart';
 
+import '../CardView.dart';
+
 class SearchPageCreate extends StatefulWidget {
   const SearchPageCreate({Key? key}) : super(key: key);
 
@@ -188,57 +190,73 @@ class SearchResultCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // print(cardData);
-    return Stack(
-      children: [
-        Container(
-          height: 150,
-          width: MediaQuery.of(context).size.width,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            image: DecorationImage(
-                image: NetworkImage(
-                  cardData["image"],
-                ),
-                fit: BoxFit.cover),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext context) => CardView(
+                userName: cardData["user_name"],
+                userImg: cardData["user_photo_url"],
+                backgroundImage: cardData["image"],
+                views: cardData["views"],
+                deckId: cardData["id"],
+                topic: cardData["topic"]),
           ),
-        ),
-        Container(
-          height: 150,
-          width: MediaQuery.of(context).size.width,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            gradient: LinearGradient(
-              colors: [
-                Colors.black.withOpacity(.7),
-                Colors.black.withOpacity(0.0)
-              ],
+        );
+      },
+      child: Stack(
+        children: [
+          Container(
+            height: 150,
+            width: MediaQuery.of(context).size.width,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              image: DecorationImage(
+                  image: NetworkImage(
+                    cardData["image"],
+                  ),
+                  fit: BoxFit.cover),
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.only(left: 25),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  cardData["topic"],
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22,
-                      color: Color(0xffFBFDFD)),
-                ),
-                Text(
-                  cardData["user_name"],
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Color(0xffFBFDFD).withOpacity(.56)),
-                )
-              ],
+          Container(
+            height: 150,
+            width: MediaQuery.of(context).size.width,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withOpacity(.7),
+                  Colors.black.withOpacity(0.0)
+                ],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 25),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    cardData["topic"],
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                        color: Color(0xffFBFDFD)),
+                  ),
+                  Text(
+                    cardData["user_name"],
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Color(0xffFBFDFD).withOpacity(.56)),
+                  )
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

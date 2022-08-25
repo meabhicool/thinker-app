@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:thinker/HomePage.dart';
 import 'package:thinker/Signup.dart';
 import 'package:thinker/UpdateProfile.dart';
 import 'package:http/http.dart' as http;
@@ -8,13 +9,17 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
+import 'package:thinker/Widgets/AuthPage.dart';
 import 'package:thinker/utils/google_sign_in.dart';
 
 class LogIn extends StatelessWidget {
   var data;
+  bool _hidePass = true;
 
   @override
   Widget build(BuildContext context) {
+    String _email = "";
+    String _password = "";
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(100),
@@ -58,11 +63,50 @@ class LogIn extends StatelessWidget {
                 SizedBox(
                   height: 20,
                 ),
-                LogInTextField(label: "Username"),
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: "Username",
+                    contentPadding: const EdgeInsets.all(20),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: Color(0xff100F15).withOpacity(0.68),
+                          width: 1.5,
+                          style: BorderStyle.solid),
+                    ),
+                  ),
+                  onChanged: (email) {
+                    _email = email;
+                  },
+                ),
                 SizedBox(
                   height: 20,
                 ),
-                LogInTextField(label: "Password"),
+                TextField(
+                  obscureText: _hidePass,
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    contentPadding: const EdgeInsets.all(20),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: Color(0xff100F15).withOpacity(0.68),
+                          width: 1.5,
+                          style: BorderStyle.solid),
+                    ),
+                  ),
+                  onChanged: (pass) {
+                    _password = pass;
+                  },
+                ),
                 SizedBox(
                   height: 10,
                 ),
@@ -82,7 +126,36 @@ class LogIn extends StatelessWidget {
                 ),
                 LogInLogOutBtn(
                   title: "Login",
-                  onTap: () async {
+                  onTap: () {
+                    final provider = Provider.of<GoogleSignInProvider>(context,
+                        listen: false);
+                    showDialog(
+                        barrierDismissible: false,
+                        context: context,
+                        builder: (_) {
+                          return Dialog(
+                            child: Container(
+                              height: 200,
+                              width: 100,
+                              child: Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                          );
+                        });
+                    provider.EmailLogIn(_email, _password).then((value) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: Colors.blueAccent,
+                          content: Text(
+                            value,
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                    });
                     // var client = http.Client();
                     // var response = await client.post(
                     //     Uri.https('thinkerr.herokuapp.com', '/user/auth'),
@@ -148,7 +221,12 @@ class LogIn extends StatelessWidget {
                   onTap: () {
                     final provider = Provider.of<GoogleSignInProvider>(context,
                         listen: false);
-                    provider.googleLogin();
+                    provider.googleLogin().then((value) => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (BuildContext context) => AuthPage(),
+                          ),
+                        ));
                   },
                 ),
                 SizedBox(
@@ -257,10 +335,9 @@ class LogInLogOutBtn extends StatelessWidget {
 }
 
 class LogInTextField extends StatelessWidget {
-  const LogInTextField({
-    required this.label,
-  });
+  const LogInTextField({required this.label});
 
+  // final Function onChanged;
   final String label;
 
   @override

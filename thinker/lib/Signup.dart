@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:thinker/utils/google_sign_in.dart';
+import 'package:provider/provider.dart';
 import 'login.dart';
 
 class SignUp extends StatelessWidget {
@@ -7,6 +8,9 @@ class SignUp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool _hidePass = true;
+    String _email = "";
+    String _password = "";
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(100),
@@ -49,27 +53,91 @@ class SignUp extends StatelessWidget {
                 SizedBox(
                   height: 20,
                 ),
-                LogInTextField(label: "Email Address"),
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: "Email",
+                    contentPadding: const EdgeInsets.all(20),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: Color(0xff100F15).withOpacity(0.68),
+                          width: 1.5,
+                          style: BorderStyle.solid),
+                    ),
+                  ),
+                  onChanged: (email) {
+                    _email = email;
+                  },
+                ),
                 SizedBox(
                   height: 20,
                 ),
-                LogInTextField(label: "Username"),
-                SizedBox(
-                  height: 10,
+                TextField(
+                  obscureText: _hidePass,
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    contentPadding: const EdgeInsets.all(20),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: Color(0xff100F15).withOpacity(0.68),
+                          width: 1.5,
+                          style: BorderStyle.solid),
+                    ),
+                  ),
+                  onChanged: (pass) {
+                    _password = pass;
+                  },
                 ),
-                SizedBox(
-                  height: 20,
-                ),
-                LogInTextField(label: "Password"),
                 SizedBox(
                   height: 20,
                 ),
                 LogInLogOutBtn(
                   title: "Signup",
-                  onTap: () {},
+                  onTap: () {
+                    // final provider = Provider.of<GoogleSignInProvider>(context,
+                    //     listen: false);
+                    // showDialog(
+                    //     barrierDismissible: false,
+                    //     context: context,
+                    //     builder: (_) {
+                    //       return Dialog(
+                    //         child: Container(
+                    //           height: 200,
+                    //           width: 100,
+                    //           child: Center(
+                    //             child: CircularProgressIndicator(),
+                    //           ),
+                    //         ),
+                    //       );
+                    //     });
+                    // provider.emailSignup(_email, _password).then((value) {
+                    //   print(_email);
+                    //   print(_password);
+                    //   ScaffoldMessenger.of(context).showSnackBar(
+                    //     SnackBar(
+                    //       behavior: SnackBarBehavior.floating,
+                    //       backgroundColor: Colors.blueAccent,
+                    //       content: Text(
+                    //         value,
+                    //         style: TextStyle(color: Colors.white),
+                    //       ),
+                    //     ),
+                    //   );
+                    //   Navigator.of(context).pop();
+                    // });
+                  },
                 ),
                 SizedBox(
-                  height: 30,
+                  height: 60,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -99,7 +167,7 @@ class SignUp extends StatelessWidget {
                   ],
                 ),
                 SizedBox(
-                  height: 30,
+                  height: 60,
                 ),
                 LogInLogOutBtn(
                   title: "Signup with Google",

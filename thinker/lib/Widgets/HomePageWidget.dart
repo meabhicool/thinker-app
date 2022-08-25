@@ -28,7 +28,7 @@ Future _getCards() async {
       });
   var _cardsDataTemp = jsonDecode(response.body);
   _cardsData = _cardsDataTemp["results"];
-  // print(_cardsDataTemp["results"]);
+  // print(_cardsData);
   return _cardsData;
 }
 
@@ -92,13 +92,14 @@ class _HomePageWidgetState extends State<HomePageWidget> {
 }
 
 class HomePageCards extends StatelessWidget {
-  const HomePageCards(
-      {required this.cardTitle,
-      required this.bgImage,
-      this.avatarImage,
-      required this.userName,
-      this.views,
-      this.deckId});
+  const HomePageCards({
+    required this.cardTitle,
+    required this.bgImage,
+    this.avatarImage,
+    required this.userName,
+    this.views,
+    this.deckId,
+  });
 
   final String cardTitle;
   final String bgImage;
@@ -106,6 +107,35 @@ class HomePageCards extends StatelessWidget {
   final String userName;
   final int? views;
   final deckId;
+
+  Future _bookmarkCard(int id, BuildContext context) async {
+    final SharedPreferences prefs = await _prefs;
+    final access_token = prefs.getString("access_token");
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (_) {
+          return Dialog(
+            child: Container(
+              height: 200,
+              width: 100,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          );
+        });
+    var client = http.Client();
+    var response = await client.patch(
+        Uri.parse('http://thinkerr.herokuapp.com/deck/bookmark/?id=${id}'),
+        headers: {
+          HttpHeaders.authorizationHeader: 'Basic ${access_token}',
+        });
+    var data = jsonDecode(response.body);
+    print(data);
+    Navigator.of(context).pop();
+    return data;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -130,6 +160,8 @@ class HomePageCards extends StatelessWidget {
                           backgroundImage: this.bgImage,
                           deckId: this.deckId,
                           topic: this.cardTitle,
+                          userImg: this.avatarImage,
+                          userName: this.userName,
                         )));
           },
         ),
@@ -175,7 +207,16 @@ class HomePageCards extends StatelessWidget {
             ),
             IconButton(
                 onPressed: () {
-                  _getCards();
+                  _bookmarkCard(deckId, context).then((value) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Colors.blueAccent,
+                      content: Text(
+                        value["message"],
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ));
+                  });
                 },
                 icon: Icon(Icons.bookmark_outline_outlined))
           ],

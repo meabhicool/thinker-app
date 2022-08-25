@@ -9,6 +9,8 @@ import 'package:http/http.dart' as http;
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../LogInNew.dart';
+
 class StartPage extends StatelessWidget {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   late String accessToken;
@@ -44,7 +46,7 @@ class StartPage extends StatelessWidget {
           } else if (snapshot.hasData) {
             return AuthPage();
           } else {
-            return LogIn();
+            return LogInNew();
           }
         },
       ),

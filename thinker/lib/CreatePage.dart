@@ -5,16 +5,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:thinker/HomePage.dart';
+import 'package:provider/provider.dart';
 import 'package:thinker/utils/TempImages.dart';
 
 class CreateCardPage extends StatefulWidget {
-  const CreateCardPage({Key? key}) : super(key: key);
-
   @override
   State<CreateCardPage> createState() => _CreateCardPageState();
 }
 
 class _CreateCardPageState extends State<CreateCardPage> {
+  late Future _fetchCards;
+  final TextEditingController controller = new TextEditingController();
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   var _topic = "";
   var _topicTemp = "";
@@ -23,6 +24,7 @@ class _CreateCardPageState extends State<CreateCardPage> {
   final myController = TextEditingController();
 
   Future _createCard() async {
+    print(_topic);
     if (_topic != "") {
       final SharedPreferences prefs = await _prefs;
       final access_token = prefs.getString("access_token");
@@ -45,17 +47,38 @@ class _CreateCardPageState extends State<CreateCardPage> {
     }
   }
 
-  Future _saveCards() async {
+  Future _saveCards(BuildContext context) async {
+    // print(_topicTemp);
     final SharedPreferences prefs = await _prefs;
     final access_token = prefs.getString("access_token");
     var client = http.Client();
     List Cards = [];
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (_) {
+          return Dialog(
+            child: Container(
+              height: 200,
+              width: 100,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          );
+        });
+    // for (int i = 0; i < _controllers.length; i++) {
+    //   // Cards.add({"content": _responseData[i]});
+    //   print(_controllers[i].text);
+    // }
     for (int i = 0; i < _responseData.length; i++) {
       Cards.add({"content": _responseData[i]});
+      // print(_controllers[i].text);
     }
+    // print(_topic);
     var rng = Random();
     Map body = {
-      "topic": _topic,
+      "topic": _topicTemp,
       "image": ImagesTemp[rng.nextInt(10)],
       "cards": Cards
     };
@@ -67,13 +90,31 @@ class _CreateCardPageState extends State<CreateCardPage> {
           "Content-type": "application/json",
         },
         body: jsonEncode(body));
-    print(jsonDecode(response.body));
+    var data = jsonDecode(response.body);
+    print(data);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.blueAccent,
+        content: Text(
+          "Deck Created Successfully!",
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+    Navigator.of(context).pop();
     return (jsonDecode(response.body));
   }
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _fetchCards = _createCard();
+  // }
+
   @override
   Widget build(BuildContext context) {
-    print(_topic);
+    // print(_topic);
     return Scaffold(
       appBar: AppBar(
         title: Text("Create Card"),
@@ -184,11 +225,25 @@ class _CreateCardPageState extends State<CreateCardPage> {
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 20, vertical: 20),
-                                            child: Text(
-                                              _responseData[index],
-                                              style: TextStyle(
-                                                  color: Colors.black),
-                                              textAlign: TextAlign.center,
+                                            // child: TextField(
+                                            //   controller: controller,
+                                            //   maxLength: 255,
+                                            //   maxLines: 5,
+                                            // )
+                                            child: Container(
+                                              child: Center(
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                          .symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 16),
+                                                  child: Text(
+                                                    _responseData[index],
+                                                    style: TextStyle(),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -201,18 +256,15 @@ class _CreateCardPageState extends State<CreateCardPage> {
                                         left: 20, right: 20, bottom: 30),
                                     child: InkWell(
                                       onTap: () {
-                                        _saveCards().then((data) {
+                                        _saveCards(context).then((data) {
                                           print(data);
-                                          if (data["code"] == 200) {
-                                            Navigator.pushAndRemoveUntil(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (BuildContext
-                                                            context) =>
-                                                        HomePage()),
-                                                (Route<dynamic> route) =>
-                                                    false);
-                                          }
+                                          Navigator.pushAndRemoveUntil(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder:
+                                                      (BuildContext context) =>
+                                                          HomePage()),
+                                              (Route<dynamic> route) => false);
                                         });
                                       },
                                       child: (_responseData.length != 0)

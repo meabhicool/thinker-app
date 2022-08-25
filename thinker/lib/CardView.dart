@@ -12,12 +12,16 @@ class CardView extends StatefulWidget {
       {required this.backgroundImage,
       required this.views,
       required this.deckId,
-      required this.topic});
+      required this.topic,
+      required this.userImg,
+      required this.userName});
 
   final String backgroundImage;
   final int views;
   final int deckId;
   final String topic;
+  final String? userImg;
+  final String userName;
 
   @override
   State<CardView> createState() => _CardViewState();
@@ -40,170 +44,244 @@ Future _getCardData(int deckId) async {
       });
   var data = jsonDecode(response.body);
   _cardData = data["data"];
-  print(data["data"]);
+  print(_cardData);
   return data["data"];
+}
+
+Future _delCardData(int deckId, BuildContext context) async {
+  final SharedPreferences prefs = await _prefs;
+  final access_token = prefs.getString("access_token");
+  showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (_) {
+        return Dialog(
+          child: Container(
+            height: 200,
+            width: 100,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+        );
+      });
+  var client = http.Client();
+  var response = await client.delete(
+      Uri.parse('https://thinkerr.herokuapp.com/deck/delete/?id=${deckId}'),
+      headers: {
+        HttpHeaders.authorizationHeader: 'Basic ${access_token}',
+      });
+  var data = jsonDecode(response.body);
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.blueAccent,
+      content: Text(
+        data["message"],
+        style: TextStyle(color: Colors.white),
+      ),
+    ),
+  );
+  Navigator.of(context).pop();
+  return data["code"];
 }
 
 class _CardViewState extends State<CardView> {
   @override
-  Widget build(BuildContext context) {
-    print(widget.backgroundImage);
+  Widget build(BuildContext contextCard) {
+    // print(widget.backgroundImage);
     return Scaffold(
-      body: SafeArea(
-        child: FutureBuilder(
-            future: _getCardData(widget.deckId),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else if (snapshot.hasData) {
-                return Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CarouselSlider(
-                      items: _cardData.asMap().entries.map((e) {
-                        return SavedCardWidget(
-                          index: e.key,
-                          text: e.value["content"],
-                          bgImage: widget.backgroundImage,
-                        );
-                      }).toList(),
-                      options: CarouselOptions(
-                        enableInfiniteScroll: false,
-                        height: MediaQuery.of(context).size.height,
-                        viewportFraction: 1,
-                        enlargeCenterPage: true,
-                      ),
-                    ),
-                    Positioned(
-                      top: 20,
-                      left: 10,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                          size: 35,
+      body: FutureBuilder(
+          future: _getCardData(widget.deckId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasData) {
+              return Scaffold(
+                  body: SafeArea(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CarouselSlider(
+                          items: _cardData.asMap().entries.map((e) {
+                            return SavedCardWidget(
+                              index: e.key,
+                              text: e.value["content"],
+                              bgImage: widget.backgroundImage,
+                            );
+                          }).toList(),
+                          options: CarouselOptions(
+                            enableInfiniteScroll: false,
+                            height: MediaQuery.of(context).size.height,
+                            viewportFraction: 1,
+                            enlargeCenterPage: true,
+                          ),
                         ),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ),
-                    // Positioned(
-                    //   right: 20,
-                    //   top: MediaQuery.of(context).size.height / 3,
-                    //   child: Container(
-                    //     decoration: BoxDecoration(
-                    //       borderRadius: BorderRadius.circular(50),
-                    //       color: Color(0xffFBFDFD).withOpacity(.6),
-                    //     ),
-                    //     child: IconButton(
-                    //       onPressed: () {},
-                    //       icon: Icon(
-                    //         Icons.arrow_forward_ios,
-                    //         color: Colors.white,
-                    //       ),
-                    //     ),
-                    //   ),
-                    // )
-                  ],
-                );
-              } else {
-                return Center(
-                  child: Text("Something went Wrong!"),
-                );
-              }
-            }),
-      ),
-      bottomSheet: DraggableScrollableSheet(
-        builder: (BuildContext context, ScrollController scrollController) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-              child: ListView(
-                physics: const PageScrollPhysics(),
-                controller: scrollController,
-                children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 25,
-                        backgroundImage: NetworkImage(user.photoURL!),
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user.displayName!,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
+                        Positioned(
+                          top: 20,
+                          left: 10,
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back,
+                              color: Colors.white,
+                              size: 35,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                        Positioned(
+                          top: 20,
+                          right: 20,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(.7),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: Center(
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.delete,
+                                  color: Colors.redAccent,
+                                  size: 30,
+                                ),
+                                onPressed: () {
+                                  _delCardData(widget.deckId, contextCard)
+                                      .then((value) {
+                                    if (value == 200) {
+                                      Navigator.of(context).pop();
+                                    }
+                                  });
+                                },
+                              ),
                             ),
                           ),
-                          Text(
-                            "${widget.views.toString()} Views",
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    child: Text(
-                      widget.topic,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
+                        ),
+                        // Positioned(
+                        //   right: 20,
+                        //   top: MediaQuery.of(context).size.height / 3,
+                        //   child: Container(
+                        //     decoration: BoxDecoration(
+                        //       borderRadius: BorderRadius.circular(50),
+                        //       color: Color(0xffFBFDFD).withOpacity(.6),
+                        //     ),
+                        //     child: IconButton(
+                        //       onPressed: () {},
+                        //       icon: Icon(
+                        //         Icons.arrow_forward_ios,
+                        //         color: Colors.white,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // )
+                      ],
                     ),
                   ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  FutureBuilder(builder: (context, snapshot) {
-                    if (_cardData.length == 0) {
-                      return Text("");
-                    } else if (_cardData.length != 0) {
-                      return Text(
-                        _cardData[0]["content"],
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w400),
+                  bottomSheet: DraggableScrollableSheet(
+                    builder: (BuildContext context,
+                        ScrollController scrollController) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
+                          ),
+                        ),
+                        child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 15, horizontal: 20),
+                            child: FutureBuilder(builder: (context, snapshot) {
+                              if (_cardData.length == 0) {
+                                return Center(
+                                  child: Text(""),
+                                );
+                              } else if (_cardData.length != 0) {
+                                return ListView(
+                                  physics: const PageScrollPhysics(),
+                                  controller: scrollController,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 25,
+                                          backgroundImage:
+                                              NetworkImage(widget.userImg!),
+                                        ),
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _cardData[0]["name"],
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                            Text(
+                                              "${widget.views.toString()} Views",
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: Text(
+                                        widget.topic,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      _cardData[0]["content"],
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w400),
+                                    )
+                                  ],
+                                );
+                              } else {
+                                return Text("");
+                              }
+                            })),
                       );
-                    } else {
-                      return Text("Oops! Something went wrong!");
-                    }
-                  })
-                ],
-              ),
-            ),
-          );
-        },
-        maxChildSize: 0.4,
-        minChildSize: 0.16,
-        initialChildSize: 0.16,
-        expand: false,
-      ),
+                    },
+                    maxChildSize: 0.4,
+                    minChildSize: 0.16,
+                    initialChildSize: 0.16,
+                    expand: false,
+                  ));
+            } else {
+              return Scaffold(
+                body: Center(
+                  child: Text("Something went Wrong!"),
+                ),
+              );
+            }
+          }),
     );
   }
 }
@@ -235,9 +313,7 @@ class SavedCardWidget extends StatelessWidget {
             child: ClipRRect(
               // make sure we apply clip it properly
               child: BackdropFilter(
-                filter: ImageFilter.blur(
-                    sigmaX: (this.index != 0) ? 4 : 0,
-                    sigmaY: (this.index != 0) ? 4 : 0),
+                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
                 child: Container(
                   alignment: Alignment.center,
                   color: Colors.grey.withOpacity(0.1),

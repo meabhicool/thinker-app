@@ -1,10 +1,13 @@
 import 'dart:io';
-
+import 'package:thinker/LogInNew.dart';
+import 'package:thinker/utils/UserData.dart' as UserData;
 import 'package:flutter/material.dart';
 import 'package:thinker/SearchPage.dart';
 import 'package:thinker/Widgets/HomePageWidget.dart';
 import 'package:thinker/Widgets/ProfilePageWidget.dart';
-
+import 'package:provider/provider.dart';
+import 'package:thinker/login.dart';
+import 'package:thinker/utils/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:thinker/Widgets/SearchPageCreateCard.dart';
 
@@ -24,7 +27,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser!;
-
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.white,
@@ -47,9 +49,11 @@ class _HomePageState extends State<HomePage> {
                     color: Color(0xff222831),
                   ),
             onPressed: () {
-              setState(() {
-                _setIndex(0);
-              });
+              _navigationIndex == 1
+                  ? setState(() {
+                      _setIndex(0);
+                    })
+                  : null;
             },
           ),
         ),
@@ -68,28 +72,59 @@ class _HomePageState extends State<HomePage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 15.0),
-            child: IconButton(
-              icon: _navigationIndex == 0
-                  ? Icon(
+            child: _navigationIndex == 0
+                ? IconButton(
+                    icon: Icon(
                       Icons.search,
                       size: 30,
                       color: Color(0xff222831),
-                    )
-                  : Icon(
-                      Icons.settings,
-                      size: 30,
-                      color: Color(0xff222831),
                     ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (BuildContext context) =>
-                        _navigationIndex == 0 ? SearchPage() : HomePage(),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (BuildContext context) => SearchPage(),
+                        ),
+                      );
+                    },
+                  )
+                : PopupMenuButton(
+                    icon: Icon(
+                      Icons.settings,
+                      color: Colors.black,
+                    ),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.logout,
+                              color: Colors.redAccent,
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text("Logout")
+                          ],
+                        ),
+                        onTap: () {
+                          {
+                            final provider = Provider.of<GoogleSignInProvider>(
+                                context,
+                                listen: false);
+                            provider.logout(context).then((value) {
+                              Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          LogInNew()),
+                                  (Route<dynamic> route) => false);
+                            });
+                          }
+                        },
+                      )
+                    ],
                   ),
-                );
-              },
-            ),
           )
         ],
       ),
